@@ -41,7 +41,6 @@ public class ClientSslWrapper {
 		// TODO: unacceptable to trust all certificates
 		// Wrapping the client to trust ANY certificate - Dangerous!
 		M_log.error("----- ClientSslWrapper currently trusts ANY certificate");
-		System.out.println("SCU: fix ssl certificate wrapper");
 		
 		try {
 			SSLContext ctx = SSLContext.getInstance("TLS");

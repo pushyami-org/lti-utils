@@ -78,7 +78,7 @@ public class SettingsClientUtils {
 			try {
 				// Make post to get resource
 
-				System.out.println("get setting from: ["+sourceUrl+"]");
+			    M_log.debug("get setting from: ["+sourceUrl+"]");
 				
 				HttpPost httpPost = new HttpPost(sourceUrl);
 				Map<String, String> ltiParams =
@@ -91,15 +91,10 @@ public class SettingsClientUtils {
 				// TODO: unacceptable to trust all certificates
 				// Wrapping the client to trust ANY certificate - Dangerous!
 				M_log.error("current trusts ANY certificate");
-				System.out.println("SCU: fix certificate");
 				HttpClient client = ClientSslWrapper.wrapClient(new DefaultHttpClient());
 				HttpResponse httpResponse = client.execute(httpPost);
 
 				StatusLine status = httpResponse.getStatusLine();
-
-				System.out.println("setSetting: httpResponse.getStatusLine(): "+ status);
-				System.out.println("setSetting: statusCode: "+ status.getStatusCode());
-
 				HttpEntity httpEntity = httpResponse.getEntity();
 
 				if (httpEntity != null) {
@@ -122,46 +117,10 @@ public class SettingsClientUtils {
 			resultString = resultStringList.get(0);
 		}
 		
-		System.out.println("got setting string: ["+resultString+"]");
 
 		return resultString;
 	}
 
-	/*
-	 * Get the settings for this tool instance.  Return it as a list of string.
-	 */
-	//	static public List<String> getSettings(TcSessionData tcSessionData)
-	//	throws ServletException, IOException 
-	//	{
-	//		List<String> result = null;
-	//		String sourceUrl = tcSessionData.getSettingUrl();
-	//		try {
-	//			// Make post to get resource
-	//			if (sourceUrl == null) {
-	//				M_log.error("sourceUrl for getSettings is null");
-	//			}
-	//			HttpPost httpPost = new HttpPost(sourceUrl);
-	//			Map<String, String> ltiParams =
-	//					loadSettingFillParametersAndSignRequest(tcSessionData);
-	//			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-	//			for (Map.Entry<String, String> parameter : ltiParams.entrySet()) {
-	//				addParameter(nvps, parameter.getKey(), parameter.getValue());
-	//			}
-	//			httpPost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
-	//			// TODO: unacceptable to trust all certificates
-	//			// Wrapping the client to trust ANY certificate - Dangerous!
-	//			System.out.println("SCU: fix certificate");
-	//			HttpClient client = ClientSslWrapper.wrapClient(new DefaultHttpClient());
-	//			HttpResponse httpResponse = client.execute(httpPost);
-	//			HttpEntity httpEntity = httpResponse.getEntity();
-	//			if (httpEntity != null) {
-	//				result = parseSettingXml(httpEntity.getContent());
-	//			}
-	//		} catch (Exception err) {
-	//			M_log.error("error parsing setting xml",err);
-	//		}
-	//		return result;
-	//	}
 
 	/* 
 	 * Setting string is returned with an xml wapper.  Pull it out.
@@ -179,7 +138,6 @@ public class SettingsClientUtils {
 		//optional, but recommended
 		//read this - http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
 		doc.getDocumentElement().normalize();
-		System.out.println("check return status");
 		NodeList nodes = doc.getElementsByTagName("setting");
 		for (int nodeIdx = 0; nodeIdx < nodes.getLength(); nodeIdx++) {
 			Node node = nodes.item(nodeIdx);
@@ -192,7 +150,7 @@ public class SettingsClientUtils {
 	// Invoke like:	printNode(doc,"..");
 	@SuppressWarnings("unused")
 	static private void printNode(Node rootNode, String spacer) {
-		System.out.println(spacer + rootNode.getNodeName() + " -> " + rootNode.getNodeValue());
+	    M_log.debug(spacer + rootNode.getNodeName() + " -> " + rootNode.getNodeValue());
 		NodeList nl = rootNode.getChildNodes();
 		for (int i = 0; i < nl.getLength(); i++)
 			printNode(nl.item(i), spacer + "   ");
@@ -208,11 +166,11 @@ public class SettingsClientUtils {
 			{
 		Boolean success = true;
 
-		System.out.println("setSetting string: ["+setting+"]");
+		M_log.debug("setSetting string: ["+setting+"]");
 		try {
 			// Make post to get resource
 			String sourceUrl = tcSessionData.getSettingUrl();
-			System.out.println("save setting to ["+sourceUrl+"]");
+			M_log.debug("save setting to ["+sourceUrl+"]");
 			HttpPost httpPost = new HttpPost(sourceUrl);
 			Map<String, String> ltiParams =
 					saveSettingFillParametersAndSignRequest(tcSessionData,setting);
@@ -228,9 +186,9 @@ public class SettingsClientUtils {
 			HttpEntity httpEntity = httpResponse.getEntity();
 
 			StatusLine status = httpResponse.getStatusLine();
+			M_log.debug("setSetting: httpResponse.getStatusLine(): "+ status);
+			M_log.debug("setSetting: statusCode: "+ status.getStatusCode());
 
-			System.out.println("setSetting: httpResponse.getStatusLine(): "+ status);
-			System.out.println("setSetting: statusCode: "+ status.getStatusCode());
 		} catch (Exception err) {
 			success=false;
 			err.printStackTrace();

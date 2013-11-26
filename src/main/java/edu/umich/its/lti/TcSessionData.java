@@ -52,7 +52,6 @@ public class TcSessionData {
 
 	public TcSessionData(HttpServletRequest request) {
 		loadTcParameters(request);
-		System.out.println("TcSession: "+this.toString());
 		M_log.debug("Tc value: "+this.toString());
 	}
 

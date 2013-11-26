@@ -162,9 +162,10 @@ public class RequestSignatureUtils {
 		try {
 			oav.validateMessage(oam,acc);
 		} catch(Exception e) {
-			System.out.println("Provider failed to validate message");
-			System.out.println(e.getMessage());
-			if ( base_string != null ) System.out.println(base_string);
+		    M_log.error("LTI validation failed: ",e);
+		    if ( base_string != null ) {
+			//			M_log.debug("base string: ",base_string);
+		    }
 			errorReturn = true;
 		}
 		return errorReturn;
