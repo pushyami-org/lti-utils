@@ -23,7 +23,7 @@ public class TcSessionData {
 	// Instance variables -------------------------------------------
 
 	private static Log M_log = LogFactory.getLog(TcSessionData.class);
-	
+
 	private final String id = UUID.randomUUID().toString();
 	private String contextId;
 	private String contextLabel;
@@ -50,8 +50,8 @@ public class TcSessionData {
 
 	// Constructors -------------------------------------------------
 
-	public TcSessionData(HttpServletRequest request) {
-		loadTcParameters(request);
+	public TcSessionData(HttpServletRequest request, OauthCredentials oac) {
+		loadTcParameters(request,oac);
 		M_log.debug("Tc value: "+this.toString());
 	}
 
@@ -86,20 +86,22 @@ public class TcSessionData {
 	 * basic-lit-deletesetting
 	 */
 
-	public void loadTcParameters(HttpServletRequest request) {
+	public void loadTcParameters(HttpServletRequest request, OauthCredentials oac) {
 		//setConsumerKey(request.getParameter("oauth_consumer_key"));
-		setOauthCredentials(request.getParameter("oauth_consumer_key"));
+
+		//setOauthCredentials(request.getParameter("oauth_consumer_key"));
+		setOauthCredentials(oac);
 		setContextId(request.getParameter("context_id"));
 		setContextLabel(request.getParameter("context_label"));
 		setContextTitle(request.getParameter("context_title"));
-		
+
 		setMembershipsId(request.getParameter("ext_ims_lis_memberships_id"));
 		setMembershipsUrl(request.getParameter("ext_ims_lis_memberships_url"));
-		
+
 		setSettingId(request.getParameter("ext_ims_lti_tool_setting_id"));
 		setSettingUrl(request.getParameter("ext_ims_lti_tool_setting_url"));
 		setSetting(request.getParameter("ext_ims_lti_tool_setting"));
-		
+
  		setLocale(request.getParameter("launch_presentation_locale"));
 		setResourceLinkId(request.getParameter("resource_link_id"));
 		setUserEmailAddress(request.getParameter("lis_person_contact_email_primary"));
@@ -115,10 +117,10 @@ public class TcSessionData {
 		return getId().equals(value);
 	}
 
-	public void setOauthCredentials(String consumerKey) {
-		this.oauthCredentials = new OauthCredentials(consumerKey);
-	}
-	
+//	public void setOauthCredentials(String consumerKey) {
+//		this.oauthCredentials = new OauthCredentials(consumerKey);
+//	}
+
 	public void setUserRoles(String value) {
 		userRoles = value;
 		if (value != null) {
