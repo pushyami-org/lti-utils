@@ -21,7 +21,7 @@ import org.apache.commons.logging.LogFactory;
 /**
  * This handles security for requests, signing outgoing request, and ensuring
  * that incoming requests are proper.
- * 
+ *
  * @author ranaseef
  *
  */
@@ -38,10 +38,10 @@ public class RequestSignatureUtils {
 	 * This signs the parameters, and returns the updated map to the caller.
 	 * This is a copy of code
 	 * org.imsglobal.basiclti.BasicLTIUtil.signParameters().
-	 * 
+	 *
 	 * Note, the given map is not updated; the caller needs to use the returned
 	 * map.
-	 * 
+	 *
 	 * @param parameters Map<String, String> of the parameter keys & values
 	 * @param url        URL of the request to be made
 	 * @param method     Request method (POST, GET)
@@ -86,9 +86,9 @@ public class RequestSignatureUtils {
 	 * Verifies the incoming request is valid request from client with the given
 	 * key, and the request contains the matching signature.  This also ensures
 	 * the nonce has not been used in another request.
-	 * 
+	 *
 	 * This is copy of code org.sakaiproject.blti.ServiceServlet.doPostForm()
-	 * 
+	 *
 	 * @param request HttpServletRequest made by the client
 	 * @param oauth_consumer_key The client's key, included in the request
 	 * @param oauth_consumer_secret THe client's secret, known locally and not
@@ -132,7 +132,7 @@ public class RequestSignatureUtils {
 		}
 		return result;
 	}
-	
+
 	/**
 	 * returns true if message is NOT valid.
 	 * @param request
@@ -150,9 +150,9 @@ public class RequestSignatureUtils {
 		OAuthAccessor acc = new OAuthAccessor(cons);
 
 		String base_string = null;
-		
+
 		Boolean errorReturn = false;
-		
+
 		try {
 			base_string = OAuthSignatureMethod.getBaseString(oam);
 		} catch (Exception e) {

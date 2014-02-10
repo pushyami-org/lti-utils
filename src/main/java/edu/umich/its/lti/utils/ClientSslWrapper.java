@@ -24,7 +24,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 /**
  * This class provides method to wrap an HTTP Client to handle SSL requests in
  * manner safe for development, accepting the server's certificate.
- * 
+ *
  * This code comes from the following:
  * <ol>
  * 	<li>http://javaskeleton.blogspot.com/2010/07/avoiding-peer-not-authenticated-with.html</li>
@@ -33,38 +33,38 @@ import org.apache.http.impl.client.DefaultHttpClient;
  * </ol>
  */
 public class ClientSslWrapper {
-	
+
 	private static Log M_log = LogFactory.getLog(ClientSslWrapper.class);
-	
+
 	public static HttpClient wrapClient(HttpClient base) {
 		//http://javaskeleton.blogspot.com/2010/07/avoiding-peer-not-authenticated-with.html
 		// TODO: unacceptable to trust all certificates
 		// Wrapping the client to trust ANY certificate - Dangerous!
 		M_log.error("----- ClientSslWrapper currently trusts ANY certificate");
-		
+
 		try {
 			SSLContext ctx = SSLContext.getInstance("TLS");
 			X509TrustManager tm = new X509TrustManager() {
- 
+
 				public void checkClientTrusted(X509Certificate[] xcs, String string) throws CertificateException {
 				}
- 
+
 				public void checkServerTrusted(X509Certificate[] xcs, String string) throws CertificateException {
 				}
- 
+
 				public X509Certificate[] getAcceptedIssuers() {
 				    return null;
 				}
 			};
 			X509HostnameVerifier verifier = new X509HostnameVerifier() {
- 		//		@Override
+		//		@Override
 				public void verify(String string, SSLSocket ssls) throws IOException {
 				}
- 
+
 		//		@Override
 				public void verify(String string, X509Certificate xc) throws SSLException {
 				}
- 
+
 		//		@Override
 				public void verify(String string, String[] strings, String[] strings1) throws SSLException {
 				}
