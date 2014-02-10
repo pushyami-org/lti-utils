@@ -3,12 +3,14 @@ package edu.umich.its.lti.utils;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
 import net.oauth.OAuthAccessor;
 import net.oauth.OAuthConsumer;
 import net.oauth.OAuthMessage;
+import net.oauth.OAuthProblemException;
 import net.oauth.OAuthValidator;
 import net.oauth.SimpleOAuthValidator;
 import net.oauth.server.OAuthServlet;
@@ -161,6 +163,15 @@ public class RequestSignatureUtils {
 
 		try {
 			oav.validateMessage(oam,acc);
+		} catch(OAuthProblemException oape){
+			M_log.error("OAuthProblemException during validation: ",oape);
+			if (M_log.isDebugEnabled()) {
+				Map<String, Object> parameters = oape.getParameters();
+				Set<String> keys = parameters.keySet();
+				for(String k: keys) {
+							M_log.debug("key: ["+k+"] value: ["+parameters.get(k)+"]");
+				}
+			}
 		} catch(Exception e) {
 		    M_log.error("LTI validation failed: ",e);
 		    if ( base_string != null ) {
