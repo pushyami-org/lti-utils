@@ -50,7 +50,7 @@ import edu.umich.its.lti.TcSessionData;
 //import edu.umich.ctools.qualtricslti.Setting;
 
 /*
- * Static methods to allow setting / getting the Settings string from the lti setting service for
+ * Static methods to allow setting / getting the Settings string from the lti setting service for 
  * a particular tool installation.
  */
 
@@ -66,7 +66,7 @@ public class SettingsClientUtils {
 
 	// get settings string as a single string, not an array.
 	static public String getSettingString(TcSessionData tcSessionData)
-			throws ServletException, IOException
+			throws ServletException, IOException 
 			{
 		List<String> resultStringList = null;
 		String resultString = null;
@@ -79,7 +79,7 @@ public class SettingsClientUtils {
 				// Make post to get resource
 
 			    M_log.debug("get setting from: ["+sourceUrl+"]");
-
+				
 				HttpPost httpPost = new HttpPost(sourceUrl);
 				Map<String, String> ltiParams =
 						loadSettingFillParametersAndSignRequest(tcSessionData);
@@ -100,7 +100,7 @@ public class SettingsClientUtils {
 				if (httpEntity != null) {
 					resultStringList = parseSettingXml(httpEntity.getContent());
 				}
-
+				
 			} catch (Exception err) {
 				M_log.error("error getting or parsing setting value",err);
 			}
@@ -116,16 +116,16 @@ public class SettingsClientUtils {
 		if (resultStringList != null && resultStringList.size() > 0) {
 			resultString = resultStringList.get(0);
 		}
-
+		
 
 		return resultString;
 	}
 
 
-	/*
+	/* 
 	 * Setting string is returned with an xml wapper.  Pull it out.
 	 */
-	private static List<String> parseSettingXml(InputStream stream)
+	private static List<String> parseSettingXml(InputStream stream) 
 			throws ParserConfigurationException,
 			SAXException, IOException {
 		List<String> result = new ArrayList<String>();
@@ -162,7 +162,7 @@ public class SettingsClientUtils {
 	 */
 
 	static public Boolean setSetting(TcSessionData tcSessionData,String setting)
-			throws ServletException, IOException
+			throws ServletException, IOException 
 			{
 		Boolean success = true;
 
@@ -208,7 +208,7 @@ public class SettingsClientUtils {
 	/**
 	 * Creates map of the request's parameters, including a signature the client
 	 * server will verify matches with the request.
-	 *
+	 * 
 	 * @param request Incoming request containing some of the ID of the client's
 	 * site, so that the settings may be retrieved.
 	 * @param sourceUrl Client server's URL for requesting settings.
@@ -216,7 +216,7 @@ public class SettingsClientUtils {
 	 */
 
 
-	// specialize request for saving the setting value
+	// specialize request for saving the setting value 
 	static private Map<String, String> saveSettingFillParametersAndSignRequest(
 			TcSessionData tcSessionData,String setting)
 			{
