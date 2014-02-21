@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.xml.parsers.DocumentBuilder;
@@ -23,19 +24,21 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
+import org.apache.http.util.EntityUtils;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import edu.umich.its.lti.TcSessionData;
-
 import edu.umich.its.lti.utils.OauthCredentials;
 /**
  *
  * @author ranaseef, dlhaines
  *
  */
+
 public class RosterClientUtils {
 	// Static public methods ----------------------------------------
 
@@ -63,6 +66,32 @@ public class RosterClientUtils {
 
 		return result;
 			}
+	
+
+	/**
+	 * Makes direct server-to-server request to get the site's roster in xml format and 
+	 * returns a nested hash map that holds all the information in the of the <member> in the xml
+	 */
+	static public HashMap<String,HashMap<String, String>> getRosterFull(TcSessionData tcSessionData)
+			throws ServletException, IOException 
+			{
+		HashMap<String,HashMap<String, String>> result = null;
+		String sourceUrl = tcSessionData.getMembershipsUrl();
+
+		// Make post to get resource
+		HttpEntity httpEntity = getRosterHttpEntity(tcSessionData,sourceUrl);
+		try {
+			result = extractPersonContactEmailPrimaryFromRosterFull(httpEntity);
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return result;
+			}
 
 
 	/*
@@ -76,10 +105,13 @@ public class RosterClientUtils {
 		}
 
 		List<String> result = new ArrayList<String>();
+		HashMap<String, String> newRoster = new HashMap<String, String>();
 		// See: http://www.mkyong.com/java/how-to-read-xml-file-in-java-dom-parser/
 		DocumentBuilderFactory dbFactory =
 				DocumentBuilderFactory.newInstance();
 		DocumentBuilder docBuilder = dbFactory.newDocumentBuilder();
+//		String xml = EntityUtils.toString(httpEntity);
+//      System.out.println("See the XML: ----"+ xml);
 		Document doc = docBuilder.parse(httpEntity.getContent());
 		//optional, but recommended
 		//read this - http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
@@ -91,8 +123,44 @@ public class RosterClientUtils {
 			result.add(node.getTextContent());
 		}
 		return result;
+	}	
+	
+	/*
+	 * Parse the xml obtained from the roster service to get a list of all the item in the <member>.
+	 */
+	protected static HashMap<String, HashMap<String, String>> extractPersonContactEmailPrimaryFromRosterFull(HttpEntity httpEntity)
+			throws ParserConfigurationException, SAXException, IOException {
+		if (httpEntity == null ) {
+			return null;
+		}
+		HashMap<String, HashMap<String, String>> newRosterBig = new HashMap<String, HashMap<String, String>>();
+		DocumentBuilderFactory dbFactory =
+				DocumentBuilderFactory.newInstance();
+		DocumentBuilder docBuilder = dbFactory.newDocumentBuilder();
+		Document doc = docBuilder.parse(httpEntity.getContent());
+		doc.getDocumentElement().normalize();
+		NodeList memberList = doc.getElementsByTagName("member");
+		String emailId=null;
+		for(int i=0;i<memberList.getLength();i++) {
+			HashMap<String, String> nestedMap = new HashMap<String, String>();
+			Node nNode = memberList.item(i);
+			if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+				Element eElement = (Element) nNode;
+				 emailId = eElement.getElementsByTagName("person_contact_email_primary").item(0).getTextContent();
+				 nestedMap.put("role", eElement.getElementsByTagName("role").item(0).getTextContent());
+				 nestedMap.put("lis_result_sourcedid", eElement.getElementsByTagName("lis_result_sourcedid").item(0).getTextContent());
+				 nestedMap.put("person_name_family", eElement.getElementsByTagName("person_name_family").item(0).getTextContent());
+				 nestedMap.put("person_name_full", eElement.getElementsByTagName("person_name_full").item(0).getTextContent());
+				 nestedMap.put("person_name_given", eElement.getElementsByTagName("person_name_given").item(0).getTextContent());
+				 nestedMap.put("person_sourcedid", eElement.getElementsByTagName("person_sourcedid").item(0).getTextContent());
+				 nestedMap.put("user_id", eElement.getElementsByTagName("user_id").item(0).getTextContent());
+				 			}
+			newRosterBig.put(emailId, nestedMap);
+		}
+		return newRosterBig;
 	}
-
+	
+	
 
 	/* 
 	 * Make call to lti roster service url and capture the response.
@@ -115,6 +183,7 @@ public class RosterClientUtils {
 		// Wrapping the client to trust ANY certificate - Dangerous!
 		HttpClient client = ClientSslWrapper.wrapClient(new DefaultHttpClient());
 		HttpResponse httpResponse = client.execute(httpPost);
+		System.out.println(httpResponse.toString());
 		HttpEntity httpEntity = httpResponse.getEntity();
 		return httpEntity;
 	}
