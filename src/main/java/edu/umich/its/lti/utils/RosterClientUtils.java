@@ -183,7 +183,6 @@ public class RosterClientUtils {
 		// Wrapping the client to trust ANY certificate - Dangerous!
 		HttpClient client = ClientSslWrapper.wrapClient(new DefaultHttpClient());
 		HttpResponse httpResponse = client.execute(httpPost);
-		System.out.println(httpResponse.toString());
 		HttpEntity httpEntity = httpResponse.getEntity();
 		return httpEntity;
 	}
