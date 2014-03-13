@@ -14,6 +14,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -40,6 +42,7 @@ import edu.umich.its.lti.utils.OauthCredentials;
  */
 
 public class RosterClientUtils {
+	private static Log M_log = LogFactory.getLog(RosterClientUtils.class);
 	// Static public methods ----------------------------------------
 
 	/**
@@ -57,11 +60,9 @@ public class RosterClientUtils {
 		try {
 			result = extractPersonContactEmailPrimaryFromRoster(httpEntity);
 		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			M_log.error("Error occurred when parsing the xml response which contains roster details",e);
 		} catch (SAXException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			M_log.error("Error occurred when parsing the xml response which contains roster details",e);
 		}
 
 		return result;
@@ -83,11 +84,9 @@ public class RosterClientUtils {
 		try {
 			result = extractPersonContactEmailPrimaryFromRosterFull(httpEntity);
 		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			M_log.error("Error occurred when parsing the xml response which contains roster details",e);
 		} catch (SAXException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			M_log.error("Error occurred when parsing the xml response which contains roster details",e);
 		}
 
 		return result;
@@ -105,17 +104,7 @@ public class RosterClientUtils {
 		}
 
 		List<String> result = new ArrayList<String>();
-		HashMap<String, String> newRoster = new HashMap<String, String>();
-		// See: http://www.mkyong.com/java/how-to-read-xml-file-in-java-dom-parser/
-		DocumentBuilderFactory dbFactory =
-				DocumentBuilderFactory.newInstance();
-		DocumentBuilder docBuilder = dbFactory.newDocumentBuilder();
-//		String xml = EntityUtils.toString(httpEntity);
-//      System.out.println("See the XML: ----"+ xml);
-		Document doc = docBuilder.parse(httpEntity.getContent());
-		//optional, but recommended
-		//read this - http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
-		doc.getDocumentElement().normalize();
+		Document doc = documentInfo(httpEntity);
 		NodeList nodes = doc
 				.getElementsByTagName("person_contact_email_primary");
 		for (int nodeIdx = 0; nodeIdx < nodes.getLength(); nodeIdx++) {
@@ -134,30 +123,38 @@ public class RosterClientUtils {
 			return null;
 		}
 		HashMap<String, HashMap<String, String>> newRosterBig = new HashMap<String, HashMap<String, String>>();
-		DocumentBuilderFactory dbFactory =
-				DocumentBuilderFactory.newInstance();
-		DocumentBuilder docBuilder = dbFactory.newDocumentBuilder();
-		Document doc = docBuilder.parse(httpEntity.getContent());
-		doc.getDocumentElement().normalize();
+		Document doc = documentInfo(httpEntity);
+		String[] rosterDetailInfo= {"person_contact_email_primary","role","lis_result_sourcedid","person_name_family",
+				"person_name_full","person_name_given","person_sourcedid","user_id"};
 		NodeList memberList = doc.getElementsByTagName("member");
-		String emailId=null;
 		for(int i=0;i<memberList.getLength();i++) {
 			HashMap<String, String> nestedMap = new HashMap<String, String>();
 			Node nNode = memberList.item(i);
 			if (nNode.getNodeType() == Node.ELEMENT_NODE) {
 				Element eElement = (Element) nNode;
-				 emailId = eElement.getElementsByTagName("person_contact_email_primary").item(0).getTextContent();
-				 nestedMap.put("role", eElement.getElementsByTagName("role").item(0).getTextContent());
-				 nestedMap.put("lis_result_sourcedid", eElement.getElementsByTagName("lis_result_sourcedid").item(0).getTextContent());
-				 nestedMap.put("person_name_family", eElement.getElementsByTagName("person_name_family").item(0).getTextContent());
-				 nestedMap.put("person_name_full", eElement.getElementsByTagName("person_name_full").item(0).getTextContent());
-				 nestedMap.put("person_name_given", eElement.getElementsByTagName("person_name_given").item(0).getTextContent());
-				 nestedMap.put("person_sourcedid", eElement.getElementsByTagName("person_sourcedid").item(0).getTextContent());
-				 nestedMap.put("user_id", eElement.getElementsByTagName("user_id").item(0).getTextContent());
+				 for (String tagName : rosterDetailInfo) {
+					 nestedMap.put(tagName, eElement.getElementsByTagName(tagName).item(0).getTextContent());
+				}
 				 			}
-			newRosterBig.put(emailId, nestedMap);
+			newRosterBig.put(nestedMap.get("person_contact_email_primary"), nestedMap);
 		}
 		return newRosterBig;
+	}
+
+
+	private static Document documentInfo(HttpEntity httpEntity)
+			throws ParserConfigurationException, SAXException, IOException {
+			// See: http://www.mkyong.com/java/how-to-read-xml-file-in-java-dom-parser/
+		DocumentBuilderFactory dbFactory =
+				DocumentBuilderFactory.newInstance();
+		DocumentBuilder docBuilder = dbFactory.newDocumentBuilder();
+	    //String xml = EntityUtils.toString(httpEntity);
+       // System.out.println("See the XML: ----"+ xml);
+		Document doc = docBuilder.parse(httpEntity.getContent());
+		//optional, but recommended
+		//read this - http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
+		doc.getDocumentElement().normalize();
+		return doc;
 	}
 	
 	
