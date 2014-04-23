@@ -26,7 +26,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
-import org.apache.http.util.EntityUtils;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -34,23 +34,37 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import edu.umich.its.lti.TcSessionData;
-import edu.umich.its.lti.utils.OauthCredentials;
+
 /**
+ *
+ * Parse the xml obtained from the roster service to get a hash (by email) of hashs of all the information for each
+ * person in the roster.
  *
  * @author ranaseef, dlhaines
  *
+ * This will get the roster from the LTI TC and return it in various formats.
+ * If ANY more formats are required all these should be refactored so that all
+ * use the extractRosterInformationFromXml method.
+ *
+ * All methods are static.
  */
 
 public class RosterClientUtils {
 	private static Log M_log = LogFactory.getLog(RosterClientUtils.class);
+
+
+	// tag names for the xml data
+	static final String[] rosterDetailInfo= {"person_contact_email_primary","role","lis_result_sourcedid","person_name_family",
+			"person_name_full","person_name_given","person_sourcedid","user_id"};
+
 	// Static public methods ----------------------------------------
 
 	/**
-	 * Makes direct server-to-server request to get the site's roster in xml format and 
+	 * Makes direct server-to-server request to get the site's roster in xml format and
 	 * returns a list of the users by email.
 	 */
 	static public List<String> getRoster(TcSessionData tcSessionData)
-			throws ServletException, IOException 
+			throws ServletException, IOException
 			{
 		List<String> result = null;
 		String sourceUrl = tcSessionData.getMembershipsUrl();
@@ -66,15 +80,38 @@ public class RosterClientUtils {
 		}
 
 		return result;
-			}
-	
+		}
+
 
 	/**
-	 * Makes direct server-to-server request to get the site's roster in xml format and 
+	 * Makes direct server-to-server request to get the site's roster in xml format and
+	 * returns a list of the users by email.
+	 */
+	static public List<String> getRosterWithNames(TcSessionData tcSessionData)
+			throws ServletException, IOException
+			{
+		List<String> result = null;
+		String sourceUrl = tcSessionData.getMembershipsUrl();
+
+		// Make post to get resource
+		HttpEntity httpEntity = getRosterHttpEntity(tcSessionData,sourceUrl);
+		try {
+			result = extractPersonEmailAndNamesFromRoster(httpEntity);
+		} catch (ParserConfigurationException e) {
+			M_log.error("Error occurred when parsing the xml response which contains roster details",e);
+		} catch (SAXException e) {
+			M_log.error("Error occurred when parsing the xml response which contains roster details",e);
+		}
+
+		return result;
+		}
+
+	/**
+	 * Makes direct server-to-server request to get the site's roster in xml format and
 	 * returns a nested hash map that holds all the information in the of the <member> in the xml
 	 */
 	static public HashMap<String,HashMap<String, String>> getRosterFull(TcSessionData tcSessionData)
-			throws ServletException, IOException 
+			throws ServletException, IOException
 			{
 		HashMap<String,HashMap<String, String>> result = null;
 		String sourceUrl = tcSessionData.getMembershipsUrl();
@@ -82,7 +119,7 @@ public class RosterClientUtils {
 		// Make post to get resource
 		HttpEntity httpEntity = getRosterHttpEntity(tcSessionData,sourceUrl);
 		try {
-			result = extractPersonContactEmailPrimaryFromRosterFull(httpEntity);
+			result = extractRosterInformationFromXML(httpEntity);
 		} catch (ParserConfigurationException e) {
 			M_log.error("Error occurred when parsing the xml response which contains roster details",e);
 		} catch (SAXException e) {
@@ -91,7 +128,6 @@ public class RosterClientUtils {
 
 		return result;
 			}
-
 
 	/*
 	 * Parse the xml obtained from the roster service to get a list of emails.
@@ -112,20 +148,32 @@ public class RosterClientUtils {
 			result.add(node.getTextContent());
 		}
 		return result;
-	}	
-	
+	}
+
 	/*
-	 * Parse the xml obtained from the roster service to get a list of all the item in the <member>.
+	 * Parse the xml obtained from the roster service to get a list of emails and name information.
 	 */
-	protected static HashMap<String, HashMap<String, String>> extractPersonContactEmailPrimaryFromRosterFull(HttpEntity httpEntity)
+	protected static List<String> extractPersonEmailAndNamesFromRoster(HttpEntity httpEntity)
+			throws ParserConfigurationException, SAXException, IOException {
+
+		if (httpEntity == null ) {
+			return null;
+		}
+
+		HashMap<String, HashMap<String, String>> roster = extractRosterInformationFromXML(httpEntity);
+		List<String> result = buildCSVEmailFirstnameLastnameFromRoster(roster);
+		return result;
+	}
+
+	// Translate the xml into a hash of hashs.
+	protected static HashMap<String, HashMap<String, String>> extractRosterInformationFromXML(HttpEntity httpEntity)
 			throws ParserConfigurationException, SAXException, IOException {
 		if (httpEntity == null ) {
 			return null;
 		}
 		HashMap<String, HashMap<String, String>> newRosterBig = new HashMap<String, HashMap<String, String>>();
 		Document doc = documentInfo(httpEntity);
-		String[] rosterDetailInfo= {"person_contact_email_primary","role","lis_result_sourcedid","person_name_family",
-				"person_name_full","person_name_given","person_sourcedid","user_id"};
+
 		NodeList memberList = doc.getElementsByTagName("member");
 		for(int i=0;i<memberList.getLength();i++) {
 			HashMap<String, String> nestedMap = new HashMap<String, String>();
@@ -141,26 +189,37 @@ public class RosterClientUtils {
 		return newRosterBig;
 	}
 
+	// Build lines in csv format that contain the email, family and given names.
+	protected static List<String> buildCSVEmailFirstnameLastnameFromRoster(
+			HashMap<String, HashMap<String, String>> roster) {
+		List<String> result = new ArrayList<String>();
+		for(String email : roster.keySet()) {
+			String familyName = roster.get(email).get("person_name_family");
+			String givenName = roster.get(email).get("person_name_given");
+			StringBuilder entry = new StringBuilder();
+			entry.append(email).append(",")
+			.append(givenName).append(",")
+			.append(familyName);
+			result.add(entry.toString());
+		}
+		return result;
+	}
 
-	private static Document documentInfo(HttpEntity httpEntity)
+	// do setup for parsing xml data.
+	protected static Document documentInfo(HttpEntity httpEntity)
 			throws ParserConfigurationException, SAXException, IOException {
 			// See: http://www.mkyong.com/java/how-to-read-xml-file-in-java-dom-parser/
 		DocumentBuilderFactory dbFactory =
 				DocumentBuilderFactory.newInstance();
 		DocumentBuilder docBuilder = dbFactory.newDocumentBuilder();
-	    //String xml = EntityUtils.toString(httpEntity);
-       // System.out.println("See the XML: ----"+ xml);
 		Document doc = docBuilder.parse(httpEntity.getContent());
-		//optional, but recommended
-		//read this - http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
 		doc.getDocumentElement().normalize();
 		return doc;
 	}
-	
-	
 
-	/* 
-	 * Make call to lti roster service url and capture the response.
+
+	/*
+	 * Make actual call to lti roster service url and capture the response.
 	 */
 
 	protected static HttpEntity getRosterHttpEntity(
@@ -169,26 +228,26 @@ public class RosterClientUtils {
 					ClientProtocolException {
 		HttpPost httpPost = new HttpPost(sourceUrl);
 
-		// TODO: can this be generalized to not explicitly depend on the roster parameters? 
 		Map<String, String> ltiParams =
 				getLtiRosterParameters(tcSessionData, sourceUrl);
+
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 		for (Map.Entry<String, String> parameter : ltiParams.entrySet()) {
 			addParameter(nvps, parameter.getKey(), parameter.getValue());
 		}
+
 		httpPost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
 		// Wrapping the client to trust ANY certificate - Dangerous!
 		HttpClient client = ClientSslWrapper.wrapClient(new DefaultHttpClient());
 		HttpResponse httpResponse = client.execute(httpPost);
 		HttpEntity httpEntity = httpResponse.getEntity();
+
 		return httpEntity;
 	}
 
 
-
-	// Static private methods ---------------------------------------
-
-	static private void addParameter(
+	// utility methods to build roster query.
+	static protected void addParameter(
 			List<NameValuePair> nvps,
 			String name,
 			String value)
@@ -199,13 +258,14 @@ public class RosterClientUtils {
 	/**
 	 * Creates map of the request's parameters, including a signature the client
 	 * server will verify matches with the request.
-	 * 
+	 *
 	 * @param request Incoming request containing some of the ID of the client's
 	 * site, so that roster may be retrieved.
 	 * @param sourceUrl Client server's URL for requesting rosters.
 	 * @return
 	 */
-	static private Map<String, String> getLtiRosterParameters(
+	// TODO: can this be generalized to not explicitly depend on the roster parameters?
+	static protected Map<String, String> getLtiRosterParameters(
 			TcSessionData tcSessionData,
 			String sourceUrl)
 			{
