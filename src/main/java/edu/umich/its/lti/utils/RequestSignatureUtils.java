@@ -94,16 +94,18 @@ public class RequestSignatureUtils {
 	 * @param request HttpServletRequest made by the client
 	 * @param oauth_consumer_key The client's key, included in the request
 	 * @param oauth_consumer_secret THe client's secret, known locally and not
+	 * @param URL the LTI launch url
 	 * included in the request.
 	 * @return true if the request is valid
 	 */
 	public static boolean verifySignature(
 			HttpServletRequest request,
 			String oauth_consumer_key,
-			String oauth_consumer_secret)
+			String oauth_consumer_secret,
+			String URL)
 	{
 		boolean result = false;
-		OAuthMessage oam = OAuthServlet.getMessage(request, null);
+		OAuthMessage oam = OAuthServlet.getMessage(request, URL);
 		OAuthValidator oav = new SimpleOAuthValidator();
 		OAuthConsumer cons = new OAuthConsumer(
 				"about:blank",
