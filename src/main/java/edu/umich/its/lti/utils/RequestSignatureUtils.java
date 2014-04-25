@@ -104,6 +104,11 @@ public class RequestSignatureUtils {
 			String oauth_consumer_secret,
 			String URL)
 	{
+		if (URL == null||URL.isEmpty()) {
+			URL=request.getRequestURL().toString();
+			
+		}
+		
 		boolean result = false;
 		OAuthMessage oam = OAuthServlet.getMessage(request, URL);
 		OAuthValidator oav = new SimpleOAuthValidator();
