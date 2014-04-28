@@ -181,13 +181,13 @@ public class RosterClientUtils {
 			if (nNode.getNodeType() == Node.ELEMENT_NODE) {
 				Element eElement = (Element) nNode;
 				 for (String tagName : rosterDetailInfo) {
+					 // skip any element in list that doesn't have a corresponding entry in the xml.
 					 String text = "";
 					 if (eElement.getElementsByTagName(tagName).item(0) != null) {
 						 text = eElement.getElementsByTagName(tagName).item(0) .getTextContent();
+						 M_log.debug("roster entry: ["+tagName+"] text: ["+text+"]");
+						 nestedMap.put(tagName, text);
 					 }
-					 M_log.debug("roster entry: ["+tagName+"] text: ["+text+"]");
-					 nestedMap.put(tagName, eElement.getElementsByTagName(tagName).item(0).getTextContent());
-					 //nestedMap.put(tagName, eElement.getElementsByTagName(tagName).item(0).getTextContent());
 				}
 				 			}
 			newRosterBig.put(nestedMap.get("person_contact_email_primary"), nestedMap);
