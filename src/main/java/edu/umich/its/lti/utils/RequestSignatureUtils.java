@@ -56,14 +56,12 @@ public class RequestSignatureUtils {
 			String url,
 			String method,
 			OauthCredentials oc)
-//			String oauth_consumer_key,
-//			String oauth_consumer_secret)
 	{
 		Map<String, String> result = null;
 		OAuthMessage oam = new OAuthMessage(method, url, parameters.entrySet());
 		OAuthConsumer cons = new OAuthConsumer(
 				"about:blank",
-				oc.getConsumerKey(),
+				oc.getKey(),
 				oc.getSecret(),
 				null);
 		OAuthAccessor acc = new OAuthAccessor(cons);
@@ -106,9 +104,9 @@ public class RequestSignatureUtils {
 	{
 		if (URL == null||URL.isEmpty()) {
 			URL=request.getRequestURL().toString();
-			
+
 		}
-		
+
 		boolean result = false;
 		OAuthMessage oam = OAuthServlet.getMessage(request, URL);
 		OAuthValidator oav = new SimpleOAuthValidator();
@@ -154,7 +152,7 @@ public class RequestSignatureUtils {
 		OAuthMessage oam = OAuthServlet.getMessage(request, null);
 		OAuthValidator oav = new SimpleOAuthValidator();
 		OAuthConsumer cons = new OAuthConsumer("about:blank#OAuth+CallBack+NotUsed",
-				oc.getConsumerKey(),oc.getSecret(),null);
+				oc.getKey(),oc.getSecret(),null);
 
 		OAuthAccessor acc = new OAuthAccessor(cons);
 

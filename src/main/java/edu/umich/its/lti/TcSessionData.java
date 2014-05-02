@@ -2,13 +2,15 @@ package edu.umich.its.lti;
 
 import java.util.UUID;
 
-import lombok.Data;
 
 import javax.servlet.http.HttpServletRequest;
+
+import lombok.Data;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import edu.umich.its.lti.utils.OauthCredentials;
 import edu.umich.its.lti.utils.OauthCredentials;
 
 /**
