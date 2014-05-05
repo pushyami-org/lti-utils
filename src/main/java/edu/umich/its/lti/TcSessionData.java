@@ -11,7 +11,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import edu.umich.its.lti.utils.OauthCredentials;
-import edu.umich.its.lti.utils.OauthCredentials;
 
 /**
  *
