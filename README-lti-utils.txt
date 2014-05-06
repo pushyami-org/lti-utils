@@ -41,11 +41,9 @@ signature and that nonce has not been used before.
   session.
 
 - Client code for requesting roster is written to accept ANY server's
-  certificate without verifying it.  This is dangerous, and is not
-  recommended for communication across the Internet.  For using this
-  to be considered safe, all networks the communication travels over
-  need to be ones the owners of TP and TC both trust to block any
-  connection by third parties.  The code accepting ANY certificate can
+  certificate without verifying it.  The operating assumption is that 
+  the application is running behind a load balancer that enforces ssl 
+  checks. The code accepting ANY certificate can
   be found at edu.umich.its.lti.utils.ClientSslWrapper#wrapClient().
 
 

@@ -38,9 +38,11 @@ public class ClientSslWrapper {
 
 	public static HttpClient wrapClient(HttpClient base) {
 		//http://javaskeleton.blogspot.com/2010/07/avoiding-peer-not-authenticated-with.html
-		// TODO: unacceptable to trust all certificates
-		// Wrapping the client to trust ANY certificate - Dangerous!
-		M_log.error("----- ClientSslWrapper currently trusts ANY certificate");
+
+		// This code by-passes it's own ssl checks.  This is unsafe if not running behind a load balancer
+		// that already enforces ssl.
+
+		M_log.warn("----- ClientSslWrapper assumes load balancer supplies the ssl checks.");
 
 		try {
 			SSLContext ctx = SSLContext.getInstance("TLS");
