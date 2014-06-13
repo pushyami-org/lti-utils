@@ -41,8 +41,7 @@ public class ClientSslWrapper {
 
 		// This code by-passes it's own ssl checks.  This is unsafe if not running behind a load balancer
 		// that already enforces ssl.
-
-		M_log.warn("----- ClientSslWrapper assumes load balancer supplies the ssl checks.");
+            //		M_log.warn("----- ClientSslWrapper assumes load balancer supplies the ssl checks.");
 
 		try {
 			SSLContext ctx = SSLContext.getInstance("TLS");
