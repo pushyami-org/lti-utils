@@ -191,7 +191,7 @@ public class SettingsClientUtils {
 
 		} catch (Exception err) {
 			success=false;
-			err.printStackTrace();
+                        M_log.error("Exception writing settings string",err);
 		}
 		return success;
 	}

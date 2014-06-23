@@ -82,8 +82,8 @@ public class ClientSslWrapper {
 			sr.register(new Scheme("https", 443, ssf));
 			return new DefaultHttpClient(ccm, base.getParams());
 		} catch (Exception ex) {
-			ex.printStackTrace();
-			return null;
+                    M_log.error("SSL wrapper error",ex);
+                    return null;
 		}
 	}
 }
