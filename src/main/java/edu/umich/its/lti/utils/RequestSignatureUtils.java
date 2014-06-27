@@ -18,13 +18,12 @@ import net.oauth.signature.OAuthSignatureMethod;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-//import org.apache.http.HttpRequest;
 
 /**
  * This handles security for requests, signing outgoing request, and ensuring
  * that incoming requests are proper.
  *
- * @author ranaseef
+ * @author ranaseef, dlhaines
  *
  */
 public class RequestSignatureUtils {
@@ -75,9 +74,7 @@ public class RequestSignatureUtils {
 			}
 			return result;
 		} catch (Exception err) {
-			M_log.error(
-					"BasicLTIUtil.signProperties OAuth Exception ",
-					err);
+			M_log.error("BasicLTIUtil.signProperties OAuth Exception ",err);
 			throw new RuntimeException(err);
 		}
 	}
@@ -104,7 +101,6 @@ public class RequestSignatureUtils {
 	{
 		if (URL == null||URL.isEmpty()) {
 			URL=request.getRequestURL().toString();
-
 		}
 
 		boolean result = false;
@@ -126,7 +122,7 @@ public class RequestSignatureUtils {
 			try {
 				String base_string = OAuthSignatureMethod.getBaseString(oam);
 				if (base_string != null) {
-					M_log.warn(base_string);
+					M_log.info(base_string);
 				}
 			} catch (Exception err2) {
 				M_log.error(
@@ -180,7 +176,7 @@ public class RequestSignatureUtils {
 		} catch(Exception e) {
 		    M_log.error("LTI validation failed: ",e);
 		    if ( base_string != null ) {
-			//			M_log.debug("base string: ",base_string);
+		    	M_log.debug("base string: "+base_string);
 		    }
 			errorReturn = true;
 		}
