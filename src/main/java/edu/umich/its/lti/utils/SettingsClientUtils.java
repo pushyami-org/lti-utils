@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.http.StatusLine;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -19,15 +19,8 @@ import org.apache.http.protocol.HTTP;
 
 import edu.umich.its.lti.TcSessionData;
 
-
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
 
-import javax.servlet.ServletException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -36,18 +29,11 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.protocol.HTTP;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-
-import edu.umich.its.lti.TcSessionData;
-//import edu.umich.ctools.qualtricslti.Setting;
 
 /*
  * Static methods to allow setting / getting the Settings string from the lti setting service for
@@ -57,7 +43,6 @@ import edu.umich.its.lti.TcSessionData;
 public class SettingsClientUtils {
 
 	private static Log M_log = LogFactory.getLog(SettingsClientUtils.class);
-
 
 	/*
 	 * Get the settings string from the setting service for this tools instance.  Will default to
@@ -71,7 +56,6 @@ public class SettingsClientUtils {
 		List<String> resultStringList = null;
 		String resultString = null;
 		String sourceUrl = tcSessionData.getSettingUrl();
-
 
 		// get from setting service if it exists.
 		if (sourceUrl != null) {
@@ -97,7 +81,19 @@ public class SettingsClientUtils {
 				StatusLine status = httpResponse.getStatusLine();
 				HttpEntity httpEntity = httpResponse.getEntity();
 
+				if (M_log.isDebugEnabled()) {
+					String entityAsString = httpEntity.getContent().toString();
+					M_log.debug("setting service entity as string: "+entityAsString);
+				}
+
 				if (httpEntity != null) {
+					if (M_log.isDebugEnabled()) {
+						String msgEncoding = "entity content encoding: "+httpEntity.getContentEncoding();
+						M_log.debug(msgEncoding);
+						String msgType = "entity content type: "+httpEntity.getContentType();
+						M_log.debug(msgType);
+					}
+
 					resultStringList = parseSettingXml(httpEntity.getContent());
 				}
 
@@ -114,20 +110,29 @@ public class SettingsClientUtils {
 		}
 
 		if (resultStringList != null && resultStringList.size() > 0) {
+
 			resultString = resultStringList.get(0);
+
+			// The setting string will be stored in base64 from now on.  This will allow for
+			// reading existing settings that aren't in base64.
+			if (Base64.isBase64(resultString)) {
+				byte[] decoded = Base64.decodeBase64(resultString);
+				resultString = new String(decoded);
+			}
 		}
 
-
+		M_log.debug("resultString: "+resultString);
 		return resultString;
 	}
 
 
 	/*
-	 * Setting string is returned with an xml wapper.  Pull it out.
+	 * Setting string is returned with an xml wapper.  Pull out the string.
 	 */
-	private static List<String> parseSettingXml(InputStream stream)
+	protected static List<String> parseSettingXml(InputStream stream)
 			throws ParserConfigurationException,
 			SAXException, IOException {
+
 		List<String> result = new ArrayList<String>();
 		// See: http://www.mkyong.com/java/how-to-read-xml-file-in-java-dom-parser/
 		DocumentBuilderFactory dbFactory =
@@ -149,22 +154,54 @@ public class SettingsClientUtils {
 	// Useful for debugging
 	// Invoke like:	printNode(doc,"..");
 	@SuppressWarnings("unused")
-	static private void printNode(Node rootNode, String spacer) {
+	static protected void printNode(Node rootNode, String spacer) {
 	    M_log.debug(spacer + rootNode.getNodeName() + " -> " + rootNode.getNodeValue());
 		NodeList nl = rootNode.getChildNodes();
 		for (int i = 0; i < nl.getLength(); i++)
 			printNode(nl.item(i), spacer + "   ");
 	}
 
+	// this is likely to be useful for tracing down encoding issues.
+	/*
+	public static boolean isValidUTF8( byte[] input ) {
+
+	    CharsetDecoder cs = Charset.forName("UTF-8").newDecoder();
+
+	    try {
+	        cs.decode(ByteBuffer.wrap(input));
+	        return true;
+	    }
+	    catch(CharacterCodingException e){
+	        return false;
+	    }
+	}
+	*/
 
 	/*
-	 * Send this string as the settinng value for this tool instance.
+	 * Send this string as the setting value for this tool instance.
 	 */
 
 	static public Boolean setSetting(TcSessionData tcSessionData,String setting)
 			throws ServletException, IOException
 			{
 		Boolean success = true;
+
+			M_log.debug("setting string: "+setting);
+
+			// Base64 encode the setting string to avoid some encoding issues when
+			// extracting the string from the XML.
+			// Base64 works in bytes so will need to translate between bytes and strings.
+			setting = Base64.encodeBase64String(setting.getBytes());
+			M_log.debug("base64 setting string: "+setting);
+
+			byte[] decoded = Base64.decodeBase64(setting);
+			String decodedString = new String(decoded);
+
+			M_log.debug("base64 setting decoded: "+ decodedString);
+
+			if (!setting.equals(decodedString)) {
+				M_log.warn("setting base64 round trip failed for string: "+setting);
+			}
 
 		M_log.debug("setSetting string: ["+setting+"]");
 		try {
@@ -178,12 +215,12 @@ public class SettingsClientUtils {
 			for (Map.Entry<String, String> parameter : ltiParams.entrySet()) {
 				addParameter(nvps, parameter.getKey(), parameter.getValue());
 			}
+
 			httpPost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
 			// Wrapping the client to trust ANY certificate - Dangerous!
 			// TODO: fix certificate usage
 			HttpClient client = ClientSslWrapper.wrapClient(new DefaultHttpClient());
 			HttpResponse httpResponse = client.execute(httpPost);
-			HttpEntity httpEntity = httpResponse.getEntity();
 
 			StatusLine status = httpResponse.getStatusLine();
 			M_log.debug("setSetting: httpResponse.getStatusLine(): "+ status);
@@ -196,8 +233,7 @@ public class SettingsClientUtils {
 		return success;
 	}
 
-
-	static private void addParameter(
+	static protected void addParameter(
 			List<NameValuePair> nvps,
 			String name,
 			String value)
@@ -217,7 +253,7 @@ public class SettingsClientUtils {
 
 
 	// specialize request for saving the setting value
-	static private Map<String, String> saveSettingFillParametersAndSignRequest(
+	static protected Map<String, String> saveSettingFillParametersAndSignRequest(
 			TcSessionData tcSessionData,String setting)
 			{
 		Map<String, String> result = new HashMap<String, String>();
@@ -231,7 +267,7 @@ public class SettingsClientUtils {
 			}
 
 	// specialize request for loading (getting/reading) the setting value
-	static private Map<String, String> loadSettingFillParametersAndSignRequest(
+	static protected Map<String, String> loadSettingFillParametersAndSignRequest(
 			TcSessionData tcSessionData)
 			{
 		Map<String, String> result = new HashMap<String, String>();
@@ -241,7 +277,7 @@ public class SettingsClientUtils {
 			}
 
 	// Common code for building setting request.
-	static private Map<String, String> createSignedResult(
+	static protected Map<String, String> createSignedResult(
 			TcSessionData tcSessionData, Map<String, String> result) {
 		result.put("id", tcSessionData.getSettingId());
 		result.put("lti_version", "LTI-1p0");
