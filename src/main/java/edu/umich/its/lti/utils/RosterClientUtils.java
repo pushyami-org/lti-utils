@@ -185,7 +185,7 @@ public class RosterClientUtils {
 					 String text = "";
 					 if (eElement.getElementsByTagName(tagName).item(0) != null) {
 						 text = eElement.getElementsByTagName(tagName).item(0) .getTextContent();
-						 M_log.debug("roster entry: ["+tagName+"] text: ["+text+"]");
+//						 M_log.debug("roster entry: ["+tagName+"] text: ["+text+"]");
 						 nestedMap.put(tagName, text);
 					 }
 				}
