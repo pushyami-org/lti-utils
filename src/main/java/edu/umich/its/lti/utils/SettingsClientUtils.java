@@ -87,13 +87,6 @@ public class SettingsClientUtils {
 				}
 
 				if (httpEntity != null) {
-					if (M_log.isDebugEnabled()) {
-						String msgEncoding = "entity content encoding: "+httpEntity.getContentEncoding();
-						M_log.debug(msgEncoding);
-						String msgType = "entity content type: "+httpEntity.getContentType();
-						M_log.debug(msgType);
-					}
-
 					resultStringList = parseSettingXml(httpEntity.getContent());
 				}
 
@@ -112,13 +105,7 @@ public class SettingsClientUtils {
 		if (resultStringList != null && resultStringList.size() > 0) {
 
 			resultString = resultStringList.get(0);
-
-			// The setting string will be stored in base64 from now on.  This will allow for
-			// reading existing settings that aren't in base64.
-			if (Base64.isBase64(resultString)) {
-				byte[] decoded = Base64.decodeBase64(resultString);
-				resultString = new String(decoded);
-			}
+			resultString = decodeSettingString(resultString);
 		}
 
 		M_log.debug("resultString: "+resultString);
@@ -186,31 +173,18 @@ public class SettingsClientUtils {
 			{
 		Boolean success = true;
 
-			M_log.debug("setting string: "+setting);
+		M_log.debug("setting string: "+setting);
 
-			// Base64 encode the setting string to avoid some encoding issues when
-			// extracting the string from the XML.
-			// Base64 works in bytes so will need to translate between bytes and strings.
-			setting = Base64.encodeBase64String(setting.getBytes());
-			M_log.debug("base64 setting string: "+setting);
+		String encodedSetting = encodeSettingString(setting);
 
-			byte[] decoded = Base64.decodeBase64(setting);
-			String decodedString = new String(decoded);
-
-			M_log.debug("base64 setting decoded: "+ decodedString);
-
-			if (!setting.equals(decodedString)) {
-				M_log.warn("setting base64 round trip failed for string: "+setting);
-			}
-
-		M_log.debug("setSetting string: ["+setting+"]");
+		M_log.debug("setSetting encoded string: ["+encodedSetting+"]");
 		try {
 			// Make post to get resource
 			String sourceUrl = tcSessionData.getSettingUrl();
 			M_log.debug("save setting to ["+sourceUrl+"]");
 			HttpPost httpPost = new HttpPost(sourceUrl);
 			Map<String, String> ltiParams =
-					saveSettingFillParametersAndSignRequest(tcSessionData,setting);
+					saveSettingFillParametersAndSignRequest(tcSessionData,encodedSetting);
 			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 			for (Map.Entry<String, String> parameter : ltiParams.entrySet()) {
 				addParameter(nvps, parameter.getKey(), parameter.getValue());
@@ -228,10 +202,45 @@ public class SettingsClientUtils {
 
 		} catch (Exception err) {
 			success=false;
-                        M_log.error("Exception writing settings string",err);
+			M_log.error("Exception writing settings string",err);
 		}
 		return success;
 	}
+
+
+	// Do any pre/post processing for setting string when sending / getting from setting service.
+	// The encoding result should be the exact string that will be sent.
+
+	/**
+	 * Take a regular setting string and encode into Base64.
+	 * @param setting
+	 * @return
+	 */
+	public static String encodeSettingString(String setting) {
+		// Base64 encode the setting string to avoid some encoding issues when
+		// extracting the string from the XML.
+		// Base64 works in bytes so will need to translate between bytes and strings.
+		String encodedSetting = Base64.encodeBase64String(setting.getBytes());
+		M_log.debug("base64 setting string: "+encodedSetting);
+
+		return encodedSetting;
+	}
+
+	/**
+	 * Take the string from the setting service and reverse the encoding.
+	 * @param resultString
+	 * @return
+	 */
+	public static String decodeSettingString(String resultString) {
+		// The setting string will be stored in base64 from now on.  This check will allow for
+		// reading pre-existing stored settings that weren't stored in base64.
+		if (Base64.isBase64(resultString)) {
+			byte[] decoded = Base64.decodeBase64(resultString);
+			resultString = new String(decoded);
+		}
+		return resultString;
+	}
+
 
 	static protected void addParameter(
 			List<NameValuePair> nvps,
