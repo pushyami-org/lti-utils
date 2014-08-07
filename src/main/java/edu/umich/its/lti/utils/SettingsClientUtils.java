@@ -108,7 +108,7 @@ public class SettingsClientUtils {
 			resultString = decodeSettingString(resultString);
 		}
 
-		M_log.debug("resultString: "+resultString);
+		M_log.debug("read setting string: "+resultString);
 		return resultString;
 	}
 
@@ -173,7 +173,7 @@ public class SettingsClientUtils {
 			{
 		Boolean success = true;
 
-		M_log.debug("setting string: "+setting);
+		M_log.debug("write setting string: "+setting);
 
 		String encodedSetting = encodeSettingString(setting);
 
