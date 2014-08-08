@@ -32,6 +32,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
  * 	<li>http://hc.apache.org/httpcomponents-client-ga/tutorial/pdf/httpclient-tutorial.pdf</li>
  * </ol>
  */
+
 public class ClientSslWrapper {
 
 	private static Log M_log = LogFactory.getLog(ClientSslWrapper.class);
@@ -41,7 +42,7 @@ public class ClientSslWrapper {
 
 		// This code by-passes it's own ssl checks.  This is unsafe if not running behind a load balancer
 		// that already enforces ssl.
-            //		M_log.warn("----- ClientSslWrapper assumes load balancer supplies the ssl checks.");
+        //		M_log.warn("----- ClientSslWrapper assumes load balancer supplies the ssl checks.");
 
 		try {
 			SSLContext ctx = SSLContext.getInstance("TLS");
@@ -58,19 +59,15 @@ public class ClientSslWrapper {
 				}
 			};
 			X509HostnameVerifier verifier = new X509HostnameVerifier() {
-		//		@Override
 				public void verify(String string, SSLSocket ssls) throws IOException {
 				}
 
-		//		@Override
 				public void verify(String string, X509Certificate xc) throws SSLException {
 				}
 
-		//		@Override
 				public void verify(String string, String[] strings, String[] strings1) throws SSLException {
 				}
 
-		//		@Override
 				public boolean verify(String string, SSLSession ssls) {
 				    return true;
 				}

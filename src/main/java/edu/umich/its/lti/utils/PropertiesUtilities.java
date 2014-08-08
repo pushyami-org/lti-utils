@@ -1,5 +1,11 @@
 package edu.umich.its.lti.utils;
 
+// Static utility methods to:
+// - get a property value from a properties object while allowing property overrides
+//   from system properties and allowing default values.
+// - get a Properties object from an URL.  The URL is resolved using java.net URL object
+//   which provides the following protocols out of the box: http, https, ftp, file, and jar.
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -10,20 +16,18 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class PropertiesUtilities {
-	// Utilities to:
-	// - get a property value from a properties object (with overrides and defaults).
-	// - get a Properties object from an URL
 
 	private static Log M_log = LogFactory.getLog(PropertiesUtilities.class);
 
-	/* Get a property from specific properties object.  If the value is set in
-	 * system properties that will override the properties object value.  If
-	 * neither is set the default value will be used.
+	/* Get a property from the supplied properties object.  If the value is set in
+	 * system properties that value will override the properties object value.  If
+	 * neither is set the default value supplied will be used.
 	 */
 	public static String getStringProperty(String defaultString, String propertyName, Properties prop) {
 
 		String setValue = null;
 		M_log.debug("setprop: defaultString: ["+defaultString+"] propertyName: ["+propertyName+"] local properties: ["+prop+"]");
+
 		/* Best not to print these out unless absolutely necessary
 		M_log.debug("system properties: ["+System.getProperties()+"]");
 		*/
@@ -48,11 +52,13 @@ public class PropertiesUtilities {
 		return setValue;
 	}
 
-	// Try to get properties object from a remote properties file.  If this can't be done
-	// it will return null.  An empty properties object means that the files exists
-	// and can be read but doesn't have anything specified within it.
-	// Null is reasonable to return for an error since the properties might be gotten
-	// from another source.
+	/*
+	 Try to get properties object from a remote properties file.  If this can't be done
+	 it will return null.  An empty properties object means that the files exists
+	 and can be read but doesn't have anything specified within it.
+	 Null is reasonable to return for a missing file since the properties might be gotten
+	 from another source.
+ 	 */
 
 	public static Properties getPropertiesObjectFromURL(String propertiesFileURL) {
 		Properties props = new Properties();
@@ -64,7 +70,7 @@ public class PropertiesUtilities {
 			return null;
 		}
 
-		// finally got a source of properties.  Try to read them.
+		//  Got a source of properties.  Try to read them.
 		try {
 			props.load(in);
 		} catch (IOException e) {

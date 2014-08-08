@@ -1,7 +1,10 @@
 package edu.umich.its.lti;
 
-import java.util.UUID;
+/* Store information for the LTI Tool consumer that will be required for future
+   conversations. Most information is from the consumer but the oauth credentials are local.
+*/
 
+import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -14,14 +17,13 @@ import edu.umich.its.lti.utils.OauthCredentials;
 
 /**
  *
- * @author ranaseef
+ * @author ranaseef, dlhaines
  *
  */
 
 /******** Use lombok for boilerplate code *********/
 @Data
 public class TcSessionData {
-	// Instance variables -------------------------------------------
 
 	private static Log M_log = LogFactory.getLog(TcSessionData.class);
 
@@ -81,16 +83,9 @@ public class TcSessionData {
 		return getHasRole("Instructor");
 	}
 
-	/*
-	 * basic-lti-loadsetting
-	 * basic-lti-savesetting
-	 * basic-lit-deletesetting
-	 */
 
 	public void loadTcParameters(HttpServletRequest request, OauthCredentials oac) {
-		//setConsumerKey(request.getParameter("oauth_consumer_key"));
 
-		//setOauthCredentials(request.getParameter("oauth_consumer_key"));
 		setOauthCredentials(oac);
 		setContextId(request.getParameter("context_id"));
 		setContextLabel(request.getParameter("context_label"));
@@ -117,10 +112,6 @@ public class TcSessionData {
 	public boolean matchTpId(String value) {
 		return getId().equals(value);
 	}
-
-//	public void setOauthCredentials(String consumerKey) {
-//		this.oauthCredentials = new OauthCredentials(consumerKey);
-//	}
 
 	public void setUserRoles(String value) {
 		userRoles = value;

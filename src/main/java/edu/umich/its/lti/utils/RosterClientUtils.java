@@ -2,12 +2,10 @@ package edu.umich.its.lti.utils;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.xml.parsers.DocumentBuilder;
@@ -37,14 +35,13 @@ import edu.umich.its.lti.TcSessionData;
 
 /**
  *
- * Parse the xml obtained from the roster service to get a hash (by email) of hashs of all the information for each
- * person in the roster.
+ * Parse the xml obtained from the LTI roster service to get a hash (keyed by email) of user information hashs for each person
+ * in the roster.
+ * @author ranaseef, dlhaines, pushyami
  *
- * @author ranaseef, dlhaines
- *
- * This will get the roster from the LTI TC and return it in various formats.
- * If ANY more formats are required all these should be refactored so that all
- * use the extractRosterInformationFromXml method.
+ * This will get the roster from the LTI tool consumer and can return it in various formats.
+ * ANY additional work should start with a refactoring to remove multiple implementations
+ * of information extraction.
  *
  * All methods are static.
  */
@@ -74,9 +71,9 @@ public class RosterClientUtils {
 		try {
 			result = extractPersonContactEmailPrimaryFromRoster(httpEntity);
 		} catch (ParserConfigurationException e) {
-			M_log.error("Error occurred when parsing the xml response which contains roster details",e);
+			M_log.error("Parser configuration error occurred when parsing the xml response which contains roster details",e);
 		} catch (SAXException e) {
-			M_log.error("Error occurred when parsing the xml response which contains roster details",e);
+			M_log.error("SAXException error occurred when parsing the xml response which contains roster details",e);
 		}
 
 		return result;
@@ -85,7 +82,7 @@ public class RosterClientUtils {
 
 	/**
 	 * Makes direct server-to-server request to get the site's roster in xml format and
-	 * returns a list of the users by email.
+	 * returns a list of the users index by by email.
 	 */
 	static public List<String> getRosterWithNames(TcSessionData tcSessionData)
 			throws ServletException, IOException
@@ -185,7 +182,6 @@ public class RosterClientUtils {
 					 String text = "";
 					 if (eElement.getElementsByTagName(tagName).item(0) != null) {
 						 text = eElement.getElementsByTagName(tagName).item(0) .getTextContent();
-//						 M_log.debug("roster entry: ["+tagName+"] text: ["+text+"]");
 						 nestedMap.put(tagName, text);
 					 }
 				}
@@ -262,19 +258,15 @@ public class RosterClientUtils {
 	}
 
 	/**
-	 * Creates map of the request's parameters, including a signature the client
+	 * Creates map of the request's parameters, including a signature that the client
 	 * server will verify matches with the request.
 	 *
-	 * @param request Incoming request containing some of the ID of the client's
-	 * site, so that roster may be retrieved.
-	 * @param sourceUrl Client server's URL for requesting rosters.
-	 * @return
+	 * The tcSession data and sourceUrl are required to call back to the tool client.
 	 */
 	// TODO: can this be generalized to not explicitly depend on the roster parameters?
 	static protected Map<String, String> getLtiRosterParameters(
 			TcSessionData tcSessionData,
-			String sourceUrl)
-			{
+			String sourceUrl) {
 		Map<String, String> result = new HashMap<String, String>();
 		result.put("id", tcSessionData.getMembershipsId());
 		result.put("lti_message_type", "basic-lis-readmembershipsforcontext");

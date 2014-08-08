@@ -1,5 +1,10 @@
 package edu.umich.its.lti.utils;
 
+	/*
+	 * Handle communication with the LTI tool client for retrieving and storing the setting string value.
+	 * All methods are static.
+	 */
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -35,11 +40,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-/*
- * Static methods to allow setting / getting the Settings string from the lti setting service for
- * a particular tool installation.
- */
-
 public class SettingsClientUtils {
 
 	private static Log M_log = LogFactory.getLog(SettingsClientUtils.class);
@@ -49,7 +49,7 @@ public class SettingsClientUtils {
 	 * returning string representing empty javascript object.  TODO: The default string should be passed in.
 	 */
 
-	// get settings string as a single string, not an array.
+	// get settings string as a single string, not an array as the setting service natively returns.
 	static public String getSettingString(TcSessionData tcSessionData)
 			throws ServletException, IOException
 			{
@@ -191,8 +191,6 @@ public class SettingsClientUtils {
 			}
 
 			httpPost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
-			// Wrapping the client to trust ANY certificate - Dangerous!
-			// TODO: fix certificate usage
 			HttpClient client = ClientSslWrapper.wrapClient(new DefaultHttpClient());
 			HttpResponse httpResponse = client.execute(httpPost);
 
@@ -213,8 +211,6 @@ public class SettingsClientUtils {
 
 	/**
 	 * Take a regular setting string and encode into Base64.
-	 * @param setting
-	 * @return
 	 */
 	public static String encodeSettingString(String setting) {
 		// Base64 encode the setting string to avoid some encoding issues when
@@ -227,9 +223,7 @@ public class SettingsClientUtils {
 	}
 
 	/**
-	 * Take the string from the setting service and reverse the encoding.
-	 * @param resultString
-	 * @return
+	 * Take the string from the setting service and undo the encoding.
 	 */
 	public static String decodeSettingString(String resultString) {
 		// The setting string will be stored in base64 from now on.  This check will allow for
@@ -253,18 +247,11 @@ public class SettingsClientUtils {
 	/**
 	 * Creates map of the request's parameters, including a signature the client
 	 * server will verify matches with the request.
-	 *
-	 * @param request Incoming request containing some of the ID of the client's
-	 * site, so that the settings may be retrieved.
-	 * @param sourceUrl Client server's URL for requesting settings.
-	 * @return
 	 */
-
 
 	// specialize request for saving the setting value
 	static protected Map<String, String> saveSettingFillParametersAndSignRequest(
-			TcSessionData tcSessionData,String setting)
-			{
+			TcSessionData tcSessionData,String setting) {
 		Map<String, String> result = new HashMap<String, String>();
 		result.put("lti_message_type", "basic-lti-savesetting");
 		// no string specified means that should save empty string.
@@ -273,19 +260,17 @@ public class SettingsClientUtils {
 		}
 		result.put("setting",setting);
 		return createSignedResult(tcSessionData, result);
-			}
+	}
 
 	// specialize request for loading (getting/reading) the setting value
-	static protected Map<String, String> loadSettingFillParametersAndSignRequest(
-			TcSessionData tcSessionData)
-			{
+	static protected Map<String, String> loadSettingFillParametersAndSignRequest(TcSessionData tcSessionData) {
 		Map<String, String> result = new HashMap<String, String>();
 		result.put("lti_message_type", "basic-lti-loadsetting");
 
 		return createSignedResult(tcSessionData, result);
-			}
+	}
 
-	// Common code for building setting request.
+	// Common code for building the setting request.
 	static protected Map<String, String> createSignedResult(
 			TcSessionData tcSessionData, Map<String, String> result) {
 		result.put("id", tcSessionData.getSettingId());

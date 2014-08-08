@@ -1,6 +1,8 @@
 package edu.umich.its.lti.utils;
 
-// data object hold the oauth credentials for a specific key.
+/* Data object to hold the oauth credentials for LTI providers.
+ * See OauthCredentialsFactory for more information.
+*/
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
