@@ -166,6 +166,7 @@ public class RequestSignatureUtils {
 			oav.validateMessage(oam,acc);
 		} catch(OAuthProblemException oape){
 			M_log.error("OAuthProblemException during validation: ",oape);
+			errorReturn = true;
 			if (M_log.isDebugEnabled()) {
 				Map<String, Object> parameters = oape.getParameters();
 				Set<String> keys = parameters.keySet();
