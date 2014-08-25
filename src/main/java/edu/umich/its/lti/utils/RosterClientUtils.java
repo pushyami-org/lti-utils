@@ -47,12 +47,24 @@ import edu.umich.its.lti.TcSessionData;
  */
 
 public class RosterClientUtils {
+
+	// Constants for all of the tags found in the roster xml.
+
+	public static final String USER_ID = "user_id";
+	public static final String PERSON_SOURCEDID = "person_sourcedid";
+	public static final String PERSON_NAME_GIVEN = "person_name_given";
+	public static final String PERSON_NAME_FULL = "person_name_full";
+	public static final String PERSON_NAME_FAMILY = "person_name_family";
+	public static final String LIS_RESULT_SOURCEDID = "lis_result_sourcedid";
+	public static final String ROLE = "role";
+	public static final String PERSON_CONTACT_EMAIL_PRIMARY = "person_contact_email_primary";
+
 	private static Log M_log = LogFactory.getLog(RosterClientUtils.class);
 
 
 	// tag names for the xml data
-	static final String[] rosterDetailInfo= {"person_contact_email_primary","role","lis_result_sourcedid","person_name_family",
-			"person_name_full","person_name_given","person_sourcedid","user_id"};
+	static final String[] rosterDetailInfo= {PERSON_CONTACT_EMAIL_PRIMARY,ROLE,LIS_RESULT_SOURCEDID,PERSON_NAME_FAMILY,
+			PERSON_NAME_FULL,PERSON_NAME_GIVEN,PERSON_SOURCEDID,USER_ID};
 
 	// Static public methods ----------------------------------------
 
@@ -133,13 +145,20 @@ public class RosterClientUtils {
 			throws ParserConfigurationException, SAXException, IOException {
 
 		if (httpEntity == null ) {
+			M_log.warn("extractPersonContactEmailPrimaryFromRoster got null httpEntity");
 			return null;
 		}
 
 		List<String> result = new ArrayList<String>();
 		Document doc = documentInfo(httpEntity);
+
+		if (doc == null ) {
+			M_log.warn("extractPersonContactEmailPrimaryFromRoster got null doc");
+			return null;
+		}
+
 		NodeList nodes = doc
-				.getElementsByTagName("person_contact_email_primary");
+				.getElementsByTagName(PERSON_CONTACT_EMAIL_PRIMARY);
 		for (int nodeIdx = 0; nodeIdx < nodes.getLength(); nodeIdx++) {
 			Node node = nodes.item(nodeIdx);
 			result.add(node.getTextContent());
@@ -154,6 +173,7 @@ public class RosterClientUtils {
 			throws ParserConfigurationException, SAXException, IOException {
 
 		if (httpEntity == null ) {
+			M_log.warn("extractPersonEmailAndNamesFromRoster got null httpEntity");
 			return null;
 		}
 
@@ -186,7 +206,7 @@ public class RosterClientUtils {
 					 }
 				}
 				 			}
-			newRosterBig.put(nestedMap.get("person_contact_email_primary"), nestedMap);
+			newRosterBig.put(nestedMap.get(PERSON_CONTACT_EMAIL_PRIMARY), nestedMap);
 		}
 		return newRosterBig;
 	}
@@ -196,8 +216,8 @@ public class RosterClientUtils {
 			HashMap<String, HashMap<String, String>> roster) {
 		List<String> result = new ArrayList<String>();
 		for(String email : roster.keySet()) {
-			String familyName = roster.get(email).get("person_name_family");
-			String givenName = roster.get(email).get("person_name_given");
+			String familyName = roster.get(email).get(PERSON_NAME_FAMILY);
+			String givenName = roster.get(email).get(PERSON_NAME_GIVEN);
 			StringBuilder entry = new StringBuilder();
 			entry.append(email).append(",")
 			.append(givenName).append(",")
@@ -241,6 +261,12 @@ public class RosterClientUtils {
 		httpPost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
 		// Wrapping the client to trust ANY certificate - Dangerous!
 		HttpClient client = ClientSslWrapper.wrapClient(new DefaultHttpClient());
+
+		if (client == null) {
+			M_log.warn("getRosterHttpEntity got null client");
+			return null;
+		}
+
 		HttpResponse httpResponse = client.execute(httpPost);
 		HttpEntity httpEntity = httpResponse.getEntity();
 

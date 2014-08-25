@@ -1,16 +1,12 @@
 package edu.umich.its.lti.utils;
 
 
-//import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-//import java.io.StringReader;
 import java.util.Properties;
-//import static org.hamcrest.CoreMatchers.notNullValue;
-//import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 
 import static org.junit.Assert.*;
 
@@ -27,12 +23,6 @@ public class OauthCredentialsFactoryTest {
 	@After
 	public void tearDown() throws Exception {
 	}
-
-	// test that can get properties
-	// test that getting unset properties is ok.
-	// test that need secret and key but url is optional
-	// test that properties modified after the fact aren't
-	// reflected in a factory created before the property is changed.
 
 	static String simpleProperties = "testb.secret=MYCROFT\ntestb.url=SOMEWHEREafterall";
 
@@ -65,6 +55,28 @@ public class OauthCredentialsFactoryTest {
 		assertThat(oac.getSecret(),is("shhhhhhh"));
 		assertThat(oac.getUrl(),is(nullValue()));
 	}
+
+	@Test
+	public void testGetOauthCredentialsOneNullKey() {
+
+		Properties p = new Properties();
+		p.put("testa.secret","shhhhhhh");
+		OauthCredentialsFactory oacf = new OauthCredentialsFactory(p);
+		OauthCredentials oac = oacf.getOauthCredentials(null);
+		assertThat(oac,is(nullValue()));
+	}
+
+	@Test
+	public void testGetOauthCredentialsOneEmptyKey() {
+
+		Properties p = new Properties();
+		p.put("testa.secret","shhhhhhh");
+		OauthCredentialsFactory oacf = new OauthCredentialsFactory(p);
+		OauthCredentials oac = oacf.getOauthCredentials("");
+		assertThat(oac,is(nullValue()));
+	}
+
+
 
 	@Test
 	public void testGetOauthCredentialsOneIsolated() {

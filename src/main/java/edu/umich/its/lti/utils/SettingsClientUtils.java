@@ -7,6 +7,7 @@ package edu.umich.its.lti.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.w3c.dom.Document;
@@ -56,27 +58,18 @@ public class SettingsClientUtils {
 		List<String> resultStringList = null;
 		String resultString = null;
 		String sourceUrl = tcSessionData.getSettingUrl();
+	    M_log.debug("get setting from: ["+sourceUrl+"]");
 
 		// get from setting service if it exists.
 		if (sourceUrl != null) {
 			try {
 				// Make post to get resource
 
-			    M_log.debug("get setting from: ["+sourceUrl+"]");
-
-				HttpPost httpPost = new HttpPost(sourceUrl);
 				Map<String, String> ltiParams =
 						loadSettingFillParametersAndSignRequest(tcSessionData);
-				List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-				for (Map.Entry<String, String> parameter : ltiParams.entrySet()) {
-					addParameter(nvps, parameter.getKey(), parameter.getValue());
-				}
-				httpPost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
-				// TODO: unacceptable to trust all certificates
-				// Wrapping the client to trust ANY certificate - Dangerous!
-				M_log.error("current trusts ANY certificate");
-				HttpClient client = ClientSslWrapper.wrapClient(new DefaultHttpClient());
-				HttpResponse httpResponse = client.execute(httpPost);
+
+				HttpResponse httpResponse = postSettingRequestAndGetHttpResponse(
+						sourceUrl, ltiParams);
 
 				StatusLine status = httpResponse.getStatusLine();
 				HttpEntity httpEntity = httpResponse.getEntity();
@@ -148,22 +141,6 @@ public class SettingsClientUtils {
 			printNode(nl.item(i), spacer + "   ");
 	}
 
-	// this is likely to be useful for tracing down encoding issues.
-	/*
-	public static boolean isValidUTF8( byte[] input ) {
-
-	    CharsetDecoder cs = Charset.forName("UTF-8").newDecoder();
-
-	    try {
-	        cs.decode(ByteBuffer.wrap(input));
-	        return true;
-	    }
-	    catch(CharacterCodingException e){
-	        return false;
-	    }
-	}
-	*/
-
 	/*
 	 * Send this string as the setting value for this tool instance.
 	 */
@@ -174,27 +151,22 @@ public class SettingsClientUtils {
 		Boolean success = true;
 
 		M_log.debug("write setting string: "+setting);
-
 		String encodedSetting = encodeSettingString(setting);
-
 		M_log.debug("setSetting encoded string: ["+encodedSetting+"]");
+
 		try {
 			// Make post to get resource
+
 			String sourceUrl = tcSessionData.getSettingUrl();
 			M_log.debug("save setting to ["+sourceUrl+"]");
-			HttpPost httpPost = new HttpPost(sourceUrl);
+
 			Map<String, String> ltiParams =
 					saveSettingFillParametersAndSignRequest(tcSessionData,encodedSetting);
-			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-			for (Map.Entry<String, String> parameter : ltiParams.entrySet()) {
-				addParameter(nvps, parameter.getKey(), parameter.getValue());
-			}
 
-			httpPost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
-			HttpClient client = ClientSslWrapper.wrapClient(new DefaultHttpClient());
-			HttpResponse httpResponse = client.execute(httpPost);
-
+			HttpResponse httpResponse = postSettingRequestAndGetHttpResponse(
+					sourceUrl, ltiParams);
 			StatusLine status = httpResponse.getStatusLine();
+
 			M_log.debug("setSetting: httpResponse.getStatusLine(): "+ status);
 			M_log.debug("setSetting: statusCode: "+ status.getStatusCode());
 
@@ -203,6 +175,31 @@ public class SettingsClientUtils {
 			M_log.error("Exception writing settings string",err);
 		}
 		return success;
+	}
+
+
+	/*
+	 * Post request to setting service and get response.  Use for both
+	 * getSettings and setSettings requests.
+	 */
+
+	public static HttpResponse postSettingRequestAndGetHttpResponse(
+			String sourceUrl, Map<String, String> ltiParams)
+			throws UnsupportedEncodingException, IOException,
+			ClientProtocolException {
+
+		HttpPost httpPost = new HttpPost(sourceUrl);
+
+		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+		for (Map.Entry<String, String> parameter : ltiParams.entrySet()) {
+			addParameter(nvps, parameter.getKey(), parameter.getValue());
+		}
+
+		httpPost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
+		HttpClient client = ClientSslWrapper.wrapClient(new DefaultHttpClient());
+
+		HttpResponse httpResponse = client.execute(httpPost);
+		return httpResponse;
 	}
 
 

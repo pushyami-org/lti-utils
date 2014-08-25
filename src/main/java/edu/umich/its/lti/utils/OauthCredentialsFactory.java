@@ -25,16 +25,14 @@ package edu.umich.its.lti.utils;
  */
 
 import java.util.Properties;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import edu.umich.its.lti.utils.OauthCredentials;
 
-// These imports are here to make logging easy to add when there is something
-// worth logging and it is safe to log it.
-
-//import org.apache.commons.logging.Log;
-//import org.apache.commons.logging.LogFactory;
-
 public class OauthCredentialsFactory {
-    //	private static Log M_log = LogFactory.getLog(OauthCredentialsFactory.class);
+	private static Log M_log = LogFactory.getLog(OauthCredentialsFactory.class);
 
 	private Properties props = null;
 
@@ -52,6 +50,12 @@ public class OauthCredentialsFactory {
 	 * to get OauthCredentials that are specific to this consumerKey.
      */
 	public OauthCredentials getOauthCredentials(String consumerKey){
+
+		if (consumerKey == null || "".equals(consumerKey)) {
+			M_log.warn(String.format("OauthCredentialsFactory got null or empty key: [%s]",consumerKey));
+			return null;
+		}
+
 		OauthCredentials oc = new OauthCredentials(consumerKey,
 				(String)this.props.get(consumerKey+".secret"),
 				(String)this.props.get(consumerKey+".url"));
