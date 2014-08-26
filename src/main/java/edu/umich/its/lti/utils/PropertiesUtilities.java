@@ -52,6 +52,31 @@ public class PropertiesUtilities {
 		return setValue;
 	}
 
+	// Get the properties object as a resource.  Need the PropertiesUtilities.class....
+	// syntax since this is a static class that needs a class loader to get the resource.
+	public static Properties getPropertiesObjectAsClassResource(String propertiesFileName) {
+		InputStream is = null;
+		Properties prop = new Properties();
+
+		// Read the properties file as a resource
+		try {
+			is = PropertiesUtilities.class.getResourceAsStream(propertiesFileName);
+			prop.load(is);
+		} catch (IOException e) {
+			M_log.info("Properties file was not loaded: "+propertiesFileName,e);
+		}
+		finally {
+			if (is != null) {
+				try {
+					is.close();
+				} catch (IOException e) {
+					M_log.error("IOException: ",e);
+				}
+			}
+		}
+		return prop;
+	}
+
 	/*
 	 Try to get properties object from a remote properties file.  If this can't be done
 	 it will return null.  An empty properties object means that the files exists
