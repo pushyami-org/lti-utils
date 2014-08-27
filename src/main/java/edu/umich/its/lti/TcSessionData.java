@@ -2,7 +2,7 @@ package edu.umich.its.lti;
 
 /* Store information for the LTI Tool consumer that will be required for future
    conversations. Most information is from the consumer but the oauth credentials are local.
-*/
+ */
 
 import java.util.UUID;
 
@@ -42,7 +42,7 @@ public class TcSessionData {
 	private String settingId;
 	private String settingUrl;
 	private String setting;
- 	private String locale;
+	private String locale;
 	private String customBrand;
 	private OauthCredentials oauthCredentials;
 
@@ -98,7 +98,7 @@ public class TcSessionData {
 		setSettingUrl(request.getParameter("ext_ims_lti_tool_setting_url"));
 		setSetting(request.getParameter("ext_ims_lti_tool_setting"));
 
- 		setLocale(request.getParameter("launch_presentation_locale"));
+		setLocale(request.getParameter("launch_presentation_locale"));
 		setResourceLinkId(request.getParameter("resource_link_id"));
 		setUserEmailAddress(request.getParameter("lis_person_contact_email_primary"));
 		setUserId(request.getParameter("user_id"));

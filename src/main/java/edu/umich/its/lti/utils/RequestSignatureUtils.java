@@ -54,8 +54,7 @@ public class RequestSignatureUtils {
 			Map<String, String> parameters,
 			String url,
 			String method,
-			OauthCredentials oc)
-	{
+			OauthCredentials oc) {
 		Map<String, String> result = null;
 		OAuthMessage oam = new OAuthMessage(method, url, parameters.entrySet());
 		OAuthConsumer cons = new OAuthConsumer(
@@ -97,8 +96,7 @@ public class RequestSignatureUtils {
 			HttpServletRequest request,
 			String oauth_consumer_key,
 			String oauth_consumer_secret,
-			String URL)
-	{
+			String URL) {
 		if (URL == null||URL.isEmpty()) {
 			URL=request.getRequestURL().toString();
 		}
@@ -127,10 +125,10 @@ public class RequestSignatureUtils {
 			} catch (Exception err2) {
 				M_log.error(
 						"Failed get get BaseString; this is for debugging - "
-						+ "look at prior error \""
-						+ errMsg
-						+ "\"",
-						err);
+								+ "look at prior error \""
+								+ errMsg
+								+ "\"",
+								err);
 			}
 		}
 		return result;
@@ -171,14 +169,14 @@ public class RequestSignatureUtils {
 				Map<String, Object> parameters = oape.getParameters();
 				Set<String> keys = parameters.keySet();
 				for(String k: keys) {
-							M_log.debug("key: ["+k+"] value: ["+parameters.get(k)+"]");
+					M_log.debug("key: ["+k+"] value: ["+parameters.get(k)+"]");
 				}
 			}
 		} catch(Exception e) {
-		    M_log.error("LTI validation failed: ",e);
-		    if ( base_string != null ) {
-		    	M_log.debug("base string: "+base_string);
-		    }
+			M_log.error("LTI validation failed: ",e);
+			if ( base_string != null ) {
+				M_log.debug("base string: "+base_string);
+			}
 			errorReturn = true;
 		}
 		return errorReturn;

@@ -42,7 +42,7 @@ public class ClientSslWrapper {
 
 		// This code by-passes it's own ssl checks.  This is unsafe if not running behind a load balancer
 		// that already enforces ssl.
-        //		M_log.warn("----- ClientSslWrapper assumes load balancer supplies the ssl checks.");
+		//		M_log.warn("----- ClientSslWrapper assumes load balancer supplies the ssl checks.");
 
 		try {
 			SSLContext ctx = SSLContext.getInstance("TLS");
@@ -55,7 +55,7 @@ public class ClientSslWrapper {
 				}
 
 				public X509Certificate[] getAcceptedIssuers() {
-				    return null;
+					return null;
 				}
 			};
 			X509HostnameVerifier verifier = new X509HostnameVerifier() {
@@ -69,7 +69,7 @@ public class ClientSslWrapper {
 				}
 
 				public boolean verify(String string, SSLSession ssls) {
-				    return true;
+					return true;
 				}
 			};
 			ctx.init(null, new TrustManager[]{tm}, null);
@@ -79,8 +79,8 @@ public class ClientSslWrapper {
 			sr.register(new Scheme("https", 443, ssf));
 			return new DefaultHttpClient(ccm, base.getParams());
 		} catch (Exception ex) {
-                    M_log.error("SSL wrapper error",ex);
-                    return null;
+			M_log.error("SSL wrapper error",ex);
+			return null;
 		}
 	}
 }

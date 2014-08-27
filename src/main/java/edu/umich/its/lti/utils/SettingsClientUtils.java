@@ -1,9 +1,9 @@
 package edu.umich.its.lti.utils;
 
-	/*
-	 * Handle communication with the LTI tool client for retrieving and storing the setting string value.
-	 * All methods are static.
-	 */
+/*
+ * Handle communication with the LTI tool client for retrieving and storing the setting string value.
+ * All methods are static.
+ */
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,12 +53,11 @@ public class SettingsClientUtils {
 
 	// get settings string as a single string, not an array as the setting service natively returns.
 	static public String getSettingString(TcSessionData tcSessionData)
-			throws ServletException, IOException
-			{
+			throws ServletException, IOException {
 		List<String> resultStringList = null;
 		String resultString = null;
 		String sourceUrl = tcSessionData.getSettingUrl();
-	    M_log.debug("get setting from: ["+sourceUrl+"]");
+		M_log.debug("get setting from: ["+sourceUrl+"]");
 
 		// get from setting service if it exists.
 		if (sourceUrl != null) {
@@ -135,7 +134,7 @@ public class SettingsClientUtils {
 	// Invoke like:	printNode(doc,"..");
 	@SuppressWarnings("unused")
 	static protected void printNode(Node rootNode, String spacer) {
-	    M_log.debug(spacer + rootNode.getNodeName() + " -> " + rootNode.getNodeValue());
+		M_log.debug(spacer + rootNode.getNodeName() + " -> " + rootNode.getNodeValue());
 		NodeList nl = rootNode.getChildNodes();
 		for (int i = 0; i < nl.getLength(); i++)
 			printNode(nl.item(i), spacer + "   ");
@@ -146,8 +145,7 @@ public class SettingsClientUtils {
 	 */
 
 	static public Boolean setSetting(TcSessionData tcSessionData,String setting)
-			throws ServletException, IOException
-			{
+			throws ServletException, IOException {
 		Boolean success = true;
 
 		M_log.debug("write setting string: "+setting);
@@ -185,8 +183,8 @@ public class SettingsClientUtils {
 
 	public static HttpResponse postSettingRequestAndGetHttpResponse(
 			String sourceUrl, Map<String, String> ltiParams)
-			throws UnsupportedEncodingException, IOException,
-			ClientProtocolException {
+					throws UnsupportedEncodingException, IOException,
+					ClientProtocolException {
 
 		HttpPost httpPost = new HttpPost(sourceUrl);
 
@@ -236,8 +234,7 @@ public class SettingsClientUtils {
 	static protected void addParameter(
 			List<NameValuePair> nvps,
 			String name,
-			String value)
-	{
+			String value) {
 		nvps.add(new BasicNameValuePair(name, value));
 	}
 

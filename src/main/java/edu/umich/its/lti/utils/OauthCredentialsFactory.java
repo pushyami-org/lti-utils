@@ -48,7 +48,7 @@ public class OauthCredentialsFactory {
 
 	/* When OauthCredentials are required call this method on the factory
 	 * to get OauthCredentials that are specific to this consumerKey.
-     */
+	 */
 	public OauthCredentials getOauthCredentials(String consumerKey){
 
 		if (consumerKey == null || "".equals(consumerKey)) {

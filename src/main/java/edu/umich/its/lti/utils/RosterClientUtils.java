@@ -64,7 +64,7 @@ public class RosterClientUtils {
 
 	// tag names for the xml data
 	static final String[] rosterDetailInfo= {PERSON_CONTACT_EMAIL_PRIMARY,ROLE,LIS_RESULT_SOURCEDID,PERSON_NAME_FAMILY,
-			PERSON_NAME_FULL,PERSON_NAME_GIVEN,PERSON_SOURCEDID,USER_ID};
+		PERSON_NAME_FULL,PERSON_NAME_GIVEN,PERSON_SOURCEDID,USER_ID};
 
 	// Static public methods ----------------------------------------
 
@@ -73,8 +73,7 @@ public class RosterClientUtils {
 	 * returns a list of the users by email.
 	 */
 	static public List<String> getRoster(TcSessionData tcSessionData)
-			throws ServletException, IOException
-			{
+			throws ServletException, IOException {
 		List<String> result = null;
 		String sourceUrl = tcSessionData.getMembershipsUrl();
 
@@ -89,7 +88,7 @@ public class RosterClientUtils {
 		}
 
 		return result;
-		}
+	}
 
 
 	/**
@@ -97,8 +96,7 @@ public class RosterClientUtils {
 	 * returns a list of the users index by by email.
 	 */
 	static public List<String> getRosterWithNames(TcSessionData tcSessionData)
-			throws ServletException, IOException
-			{
+			throws ServletException, IOException {
 		List<String> result = null;
 		String sourceUrl = tcSessionData.getMembershipsUrl();
 
@@ -113,15 +111,14 @@ public class RosterClientUtils {
 		}
 
 		return result;
-		}
+	}
 
 	/**
 	 * Makes direct server-to-server request to get the site's roster in xml format and
 	 * returns a nested hash map that holds all the information in the of the <member> in the xml
 	 */
 	static public HashMap<String,HashMap<String, String>> getRosterFull(TcSessionData tcSessionData)
-			throws ServletException, IOException
-			{
+			throws ServletException, IOException {
 		HashMap<String,HashMap<String, String>> result = null;
 		String sourceUrl = tcSessionData.getMembershipsUrl();
 
@@ -136,7 +133,7 @@ public class RosterClientUtils {
 		}
 
 		return result;
-			}
+	}
 
 	/*
 	 * Parse the xml obtained from the roster service to get a list of emails.
@@ -197,15 +194,15 @@ public class RosterClientUtils {
 			Node nNode = memberList.item(i);
 			if (nNode.getNodeType() == Node.ELEMENT_NODE) {
 				Element eElement = (Element) nNode;
-				 for (String tagName : rosterDetailInfo) {
-					 // skip any element in list that doesn't have a corresponding entry in the xml.
-					 String text = "";
-					 if (eElement.getElementsByTagName(tagName).item(0) != null) {
-						 text = eElement.getElementsByTagName(tagName).item(0) .getTextContent();
-						 nestedMap.put(tagName, text);
-					 }
+				for (String tagName : rosterDetailInfo) {
+					// skip any element in list that doesn't have a corresponding entry in the xml.
+					String text = "";
+					if (eElement.getElementsByTagName(tagName).item(0) != null) {
+						text = eElement.getElementsByTagName(tagName).item(0) .getTextContent();
+						nestedMap.put(tagName, text);
+					}
 				}
-				 			}
+			}
 			newRosterBig.put(nestedMap.get(PERSON_CONTACT_EMAIL_PRIMARY), nestedMap);
 		}
 		return newRosterBig;
@@ -230,7 +227,7 @@ public class RosterClientUtils {
 	// do setup for parsing xml data.
 	protected static Document documentInfo(HttpEntity httpEntity)
 			throws ParserConfigurationException, SAXException, IOException {
-			// See: http://www.mkyong.com/java/how-to-read-xml-file-in-java-dom-parser/
+		// See: http://www.mkyong.com/java/how-to-read-xml-file-in-java-dom-parser/
 		DocumentBuilderFactory dbFactory =
 				DocumentBuilderFactory.newInstance();
 		DocumentBuilder docBuilder = dbFactory.newDocumentBuilder();
@@ -278,8 +275,7 @@ public class RosterClientUtils {
 	static protected void addParameter(
 			List<NameValuePair> nvps,
 			String name,
-			String value)
-	{
+			String value) {
 		nvps.add(new BasicNameValuePair(name, value));
 	}
 
@@ -304,5 +300,5 @@ public class RosterClientUtils {
 				"POST",
 				tcSessionData.getOauthCredentials());
 		return result;
-			}
+	}
 }

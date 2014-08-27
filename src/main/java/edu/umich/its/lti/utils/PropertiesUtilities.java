@@ -30,7 +30,7 @@ public class PropertiesUtilities {
 
 		/* Best not to print these out unless absolutely necessary
 		M_log.debug("system properties: ["+System.getProperties()+"]");
-		*/
+		 */
 
 		// check system property
 		setValue = System.getProperty(propertyName);
@@ -83,7 +83,7 @@ public class PropertiesUtilities {
 	 and can be read but doesn't have anything specified within it.
 	 Null is reasonable to return for a missing file since the properties might be gotten
 	 from another source.
- 	 */
+	 */
 
 	public static Properties getPropertiesObjectFromURL(String propertiesFileURL) {
 		Properties props = new Properties();
