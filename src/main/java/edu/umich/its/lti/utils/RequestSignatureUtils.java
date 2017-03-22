@@ -103,7 +103,7 @@ public class RequestSignatureUtils {
 		if (URL == null||URL.isEmpty()) {
 			URL=request.getRequestURL().toString();
 		}
-
+                URL = "https://ccm-dev.openshift.dsc.umich.edu/canvasCourseManager/index-lti.vm";
 		boolean result = false;
 		OAuthMessage oam = OAuthServlet.getMessage(request, URL);
 		OAuthValidator oav = new SimpleOAuthValidator();
